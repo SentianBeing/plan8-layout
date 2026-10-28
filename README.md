@@ -2,6 +2,8 @@
 
 An interactive 3D and 2D architectural site plan and inventory visualizer for **Plan-8 Layout** (61 residential plots). Ready for one-click deployment to **Vercel**.
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FSentianBeing%2Fplan8-layout)
+
 ![Plan-8 Social Banner](public/og-banner.jpg)
 
 ---
