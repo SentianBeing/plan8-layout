@@ -1,6 +1,6 @@
 /* ==========================================================================
    Plan-8 Layout - Design System & Stylesheet
-   Full-bleed tilted 3D site plan with floating dark glass HUD & cards
+   Interactive 2D architectural site plan with floating dark glass HUD & cards
    ========================================================================== */
 
 :root {
@@ -807,7 +807,6 @@ summary:focus-visible,
 .ctrls button:last-child { border-bottom: 0; }
 .ctrls button:hover { background: var(--panel-hover); }
 .ctrls svg { width: 18px; height: 18px; }
-.ctrls .mode { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; }
 
 .hud-b {
   left: calc((100% + var(--pw)) / 2);

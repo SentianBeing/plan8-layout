@@ -1,6 +1,6 @@
-# Plan-8 Layout · Interactive 3D Plot Layout Website
+# Plan-8 Layout · Interactive Plot Layout Website
 
-An interactive 3D and 2D architectural site plan and inventory visualizer for **Plan-8 Layout** (61 residential plots). Ready for one-click deployment to **Vercel**.
+An interactive 2D architectural site plan and inventory visualizer for **Plan-8 Layout** (61 residential plots). Ready for one-click deployment to **Vercel**.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FSentianBeing%2Fplan8-layout)
 
@@ -10,7 +10,7 @@ An interactive 3D and 2D architectural site plan and inventory visualizer for **
 
 ## ✨ Features
 
-- **Interactive 3D / 2D Perspective**: Tilted ground plane with extruded curbs, roads, trees, parks, and survey boundary markers.
+- **Interactive 2D Site Plan**: Smooth pan and zoom with vector curbs, roads, trees, parks, and survey boundary markers.
 - **Real-Time Plot Status**: Available (green), Booked (amber), Sold (red), or Reserved.
 - **Dynamic Search & Filters**: Search plots by number, filter by status, facing (East, West, North, South), and plot dimensions (30×50, 30×40, odd sites).
 - **Interactive Measurement Units**: Instant toggle between Metres and Feet & Inches, plus Survey No. overlays.
@@ -137,11 +137,11 @@ plan8-layout/
 ├── .gitignore          # Git ignore rules
 ├── README.md           # Deployment & configuration documentation
 ├── css/
-│   └── style.css       # Design system, glassmorphism, 3D transforms & responsiveness
+│   └── style.css       # Design system, glassmorphism, responsive styles
 ├── js/
 │   ├── config.js       # Client configuration (availability, pricing, contacts)
 │   ├── plan-data.js    # Surveyor CAD coordinates, boundaries, roads, parks
-│   └── app.js          # Interactive 3D engine, matrix projections, modal & filters
+│   └── app.js          # Interactive map engine, matrix transforms, modal & filters
 ├── api/
 │   └── enquiry.js      # Vercel Serverless Function for lead form submissions
 └── public/

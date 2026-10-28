@@ -215,12 +215,6 @@
     g += `<g class="zone-hit" data-tip="Road widening area|Hatched on the approved plan"><polygon points="${ptsAttr(WIDEN_N)}" fill="url(#pat-hatch)"/><polygon points="${ptsAttr(WIDEN_W)}" fill="url(#pat-hatch)"/></g>`;
     ROADS.forEach(r => { g += `<line class="m-roadline" x1="${r.c[0][0]}" y1="${r.c[0][1]}" x2="${r.c[1][0]}" y2="${r.c[1][1]}"/>`; });
 
-    // Walls (extruded sides) for raised elements
-    g += `<g id="walls">`;
-    PLOTS.forEach(p => { g += `<polygon class="m-wall" points="${ptsAttr(p.pts)}"/>`; });
-    g += `</g>`;
-    g += `<g id="walls-hi">${[UTILITY, STP].map(q => `<polygon class="m-wall" points="${ptsAttr(q)}" style="stroke-width:3"/>`).join("")}</g>`;
-
     g += trees(PARK1, [PLOTS14_BOX, UTILITY, STP], 7, 30) + trees(PARK2, [], 9, 30);
 
     // Curbs (block outlines)
@@ -259,8 +253,6 @@
   build();
 
   const content = document.getElementById("content");
-  const walls = document.getElementById("walls");
-  const wallsHi = document.getElementById("walls-hi");
   const uprights = [...svg.querySelectorAll("[data-ux]")].map(el => ({ el, x: +el.dataset.ux, y: +el.dataset.uy }));
   const alongs = [...svg.querySelectorAll("[data-ax]")].map(el => ({ el, x: +el.dataset.ax, y: +el.dataset.ay, ang: +el.dataset.ang }));
   const numLabels = [...svg.querySelectorAll(".p-no")].map(el => {
@@ -269,15 +261,14 @@
   });
   const plotEls = Object.fromEntries([...svg.querySelectorAll(".plot")].map(el => [el.dataset.no, el]));
 
-  /* ================= View: pan / zoom / rotate / tilt ================= */
+  /* ================= View: pan / zoom / rotate (Pure 2D) ================= */
   const stage = document.getElementById("stage");
   const panel = document.getElementById("panel");
   const needleEl = document.getElementById("needle");
   const zoomHint = document.getElementById("zoom-hint");
   const zoomHintBtn = document.getElementById("zoom-hint-btn");
-  const TILT_3D = 45;
   const DIMS_MIN_Z = 0.8;
-  const view = { cx: HOME.cx, cy: HOME.cy, z: 0.3, tilt: TILT_3D, rot: 0, pl: 0 };
+  const view = { cx: HOME.cx, cy: HOME.cy, z: 0.3, tilt: 0, rot: 0, pl: 0 };
   let SW = 0, SH = 0, lastZ = 0;
   let stageRect = { left: 0, top: 0, width: 0, height: 0 };
 
@@ -293,21 +284,21 @@
   const panelPad = () => (isWide() && panel.classList.contains("open") ? panel.offsetLeft + panel.offsetWidth : 0);
 
   function matrixFor(v) {
-    const r = v.rot * Math.PI / 180, ct = Math.cos(v.tilt * Math.PI / 180);
+    const r = v.rot * Math.PI / 180;
     const a = v.z * Math.cos(r), c = -v.z * Math.sin(r);
-    const b = v.z * ct * Math.sin(r), d = v.z * ct * Math.cos(r);
+    const b = v.z * Math.sin(r), d = v.z * Math.cos(r);
     const P = pads();
     const sx = v.pl + (SW - v.pl) / 2, sy = P.t + (SH - P.t - P.b) / 2;
-    return { a, b, c, d, e: sx - (a * v.cx + c * v.cy), f: sy - (b * v.cx + d * v.cy), ct };
+    return { a, b, c, d, e: sx - (a * v.cx + c * v.cy), f: sy - (b * v.cx + d * v.cy), ct: 1 };
   }
   function unproject(m, X, Y) {
     const det = m.a * m.d - m.b * m.c;
     return [(m.d * X - m.c * Y) / det, (-m.b * X + m.a * Y) / det];
   }
-  function fitZoom(tilt = view.tilt, rot = view.rot, pl = view.pl) {
+  function fitZoom(tilt = 0, rot = view.rot, pl = view.pl) {
     const w = BOUNDS.x1 - BOUNDS.x0, h = BOUNDS.y1 - BOUNDS.y0;
     const r = rot * Math.PI / 180, c = Math.abs(Math.cos(r)), s = Math.abs(Math.sin(r));
-    const bw = w * c + h * s, bh = (w * s + h * c) * Math.cos(tilt * Math.PI / 180);
+    const bw = w * c + h * s, bh = w * s + h * c;
     const P = pads();
     const availW = Math.max(200, SW - pl - (pl ? 24 : 0) - P.r);
     const availH = Math.max(200, SH - P.t - P.b);
@@ -337,7 +328,6 @@
   }
 
   let lastRot = null;
-  let lastTilt = null;
   let lastZApplied = null;
 
   function apply(forceFull = false) {
@@ -346,17 +336,11 @@
     content.setAttribute("transform", `matrix(${f(m.a)} ${f(m.b)} ${f(m.c)} ${f(m.d)} ${m.e.toFixed(2)} ${m.f.toFixed(2)})`);
 
     const rotChanged = forceFull || lastRot === null || Math.abs(view.rot - lastRot) > 0.005;
-    const tiltChanged = forceFull || lastTilt === null || Math.abs(view.tilt - lastTilt) > 0.005;
     const zChanged = forceFull || lastZApplied === null || Math.abs(view.z - lastZApplied) > 0.0005;
 
-    if (rotChanged || tiltChanged || zChanged) {
-      const st = Math.sin(view.tilt * Math.PI / 180);
-      const w1 = unproject(m, 0, 9 * view.z * st), w2 = unproject(m, 0, 20 * view.z * st);
-      walls.setAttribute("transform", `translate(${w1[0].toFixed(2)} ${w1[1].toFixed(2)})`);
-      wallsHi.setAttribute("transform", `translate(${w2[0].toFixed(2)} ${w2[1].toFixed(2)})`);
-
-      const sy = (1 / m.ct).toFixed(4), rr = (-view.rot).toFixed(2);
-      uprights.forEach(u => u.el.setAttribute("transform", `translate(${u.x} ${u.y}) rotate(${rr}) scale(1 ${sy}) translate(${-u.x} ${-u.y})`));
+    if (rotChanged) {
+      const rr = (-view.rot).toFixed(2);
+      uprights.forEach(u => u.el.setAttribute("transform", `translate(${u.x} ${u.y}) rotate(${rr}) translate(${-u.x} ${-u.y})`));
       alongs.forEach(a => {
         let ang = a.ang;
         const eff = ((ang + view.rot) % 360 + 540) % 360 - 180;
@@ -369,7 +353,6 @@
       }
 
       lastRot = view.rot;
-      lastTilt = view.tilt;
     }
 
     if (zChanged) {
@@ -388,17 +371,6 @@
       zoomHint.hidden = !far || document.body.classList.contains("hide-dims") || !!root.firstChild;
       lastZApplied = view.z;
     }
-
-    if (!stage.classList.contains("dragging") && (rotChanged || tiltChanged || zChanged)) {
-      updateLiftOffset(m);
-    }
-  }
-
-  function updateLiftOffset(m) {
-    const st = Math.sin(view.tilt * Math.PI / 180);
-    const lift = unproject(m, 0, -view.z * (2 + 5 * st));
-    svg.style.setProperty("--lift-x", `${lift[0].toFixed(2)}px`);
-    svg.style.setProperty("--lift-y", `${lift[1].toFixed(2)}px`);
   }
 
   function toPlan(sx, sy) {
@@ -424,20 +396,21 @@
     cancelAnimationFrame(anim);
     cancelAnimationFrame(inertiaAnim);
     const from = { ...view };
-    const to = { ...view, ...target };
-    if (reduceMotion) { Object.assign(view, to); scheduleApply(true); syncModeBtn(); return; }
+    const to = { ...view, ...target, tilt: 0 };
+    if (reduceMotion) { Object.assign(view, to); scheduleApply(true); return; }
     const t0 = performance.now();
     const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     const step = now => {
       const k = Math.min(1, (now - t0) / ms), e = ease(k);
-      for (const key of ["cx", "cy", "z", "tilt", "rot", "pl"]) view[key] = from[key] + (to[key] - from[key]) * e;
+      for (const key of ["cx", "cy", "z", "rot", "pl"]) view[key] = from[key] + (to[key] - from[key]) * e;
+      view.tilt = 0;
       scheduleApply(true);
-      if (k < 1) anim = requestAnimationFrame(step); else { syncModeBtn(); updateLiftOffset(matrixFor(view)); }
+      if (k < 1) anim = requestAnimationFrame(step);
     };
     anim = requestAnimationFrame(step);
   }
   function resetView() {
-    animateTo({ ...HOME, z: fitZoom(TILT_3D, 0, view.pl), tilt: TILT_3D, rot: 0 });
+    animateTo({ ...HOME, z: fitZoom(0, 0, view.pl), tilt: 0, rot: 0 });
   }
   function zoomBy(f) {
     animateTo({ z: clampZ(view.z * f) }, 320);
@@ -510,8 +483,7 @@
 
     if (drag.rotateMode) {
       view.rot += (e.clientX - drag.lx) * 0.35;
-      view.tilt = Math.max(0, Math.min(62, view.tilt - (e.clientY - drag.ly) * 0.25));
-      syncModeBtn();
+      view.tilt = 0;
       scheduleApply(true);
     } else {
       const p = toPlan(e.clientX - stageRect.left, e.clientY - stageRect.top);
@@ -528,7 +500,6 @@
     if (pointers.size < 2) pinch = null;
     if (pointers.size === 0) {
       stage.classList.remove("dragging");
-      updateLiftOffset(matrixFor(view));
 
       if (drag && moved < 5 && downPlot && e.type === "pointerup" && e.button !== 2) {
         openPlot(+downPlot.dataset.no);
@@ -612,21 +583,14 @@
     const map = {
       "+": () => zoomBy(1.4), "=": () => zoomBy(1.4), "-": () => zoomBy(1 / 1.4), "_": () => zoomBy(1 / 1.4),
       "0": resetView, q: () => animateTo({ rot: view.rot - 45 }, 400), e: () => animateTo({ rot: view.rot + 45 }, 400),
-      t: () => modeBtn.click(), "/": () => { openPanel(); qInput.focus(); },
+      "/": () => { openPanel(); qInput.focus(); },
       ArrowLeft: () => pan(-120, 0), ArrowRight: () => pan(120, 0), ArrowUp: () => pan(0, -120), ArrowDown: () => pan(0, 120)
     };
     const fn = map[e.key];
     if (fn && !(e.key.startsWith("Arrow") && e.target.closest(".plot"))) { e.preventDefault(); fn(); }
   });
 
-  /* View mode & HUD Controls */
-  const modeBtn = document.getElementById("btn-mode");
-  function syncModeBtn() {
-    const is3d = view.tilt > 8;
-    modeBtn.querySelector(".mode").textContent = is3d ? "2D" : "3D";
-    modeBtn.setAttribute("aria-label", is3d ? "Switch to 2D view" : "Switch to 3D view");
-  }
-  modeBtn.addEventListener("click", () => animateTo({ tilt: view.tilt <= 8 ? TILT_3D : 0, z: clampZ(view.z) }));
+  /* View & HUD Controls */
   document.getElementById("btn-zin").addEventListener("click", () => zoomBy(1.5));
   document.getElementById("btn-zout").addEventListener("click", () => zoomBy(1 / 1.5));
   document.getElementById("btn-rl").addEventListener("click", () => animateTo({ rot: view.rot - 45 }, 450));
@@ -636,7 +600,7 @@
     const northUp = Math.abs(((view.rot - 90) % 360 + 540) % 360 - 180) < 1;
     const target = northUp ? 0 : 90;
     const delta = ((target - view.rot) % 360 + 540) % 360 - 180;
-    animateTo({ rot: view.rot + delta, z: fitZoom(view.tilt, target) }, 600);
+    animateTo({ rot: view.rot + delta, z: fitZoom(0, target) }, 600);
   });
   if (zoomHintBtn) {
     zoomHintBtn.addEventListener("click", () => animateTo({ z: Math.max(DIMS_MIN_Z * 1.35, view.z) }, 500));
@@ -1097,13 +1061,12 @@
   const project = CFG.project || "Plan-8 Layout";
   document.getElementById("proj-title").textContent = project;
   if (CFG.subtitle) document.getElementById("proj-sub").textContent = CFG.subtitle;
-  document.title = `${project} · Interactive 3D Plot Layout`;
+  document.title = `${project} · Interactive Plot Layout`;
 
   layout();
   setPanel(isWide(), false);
   view.z = fitZoom();
   apply(true);
-  syncModeBtn();
   let resizeTimer = null;
   window.addEventListener("resize", () => {
     layout();
