@@ -144,23 +144,23 @@
     });
     return d;
   }
-  function trees(poly, avoid, seed, step) {
+  function trees(poly, avoid, seed, step = 38) {
     const r = rng(seed);
     const xs = poly.map(p => p[0]), ys = poly.map(p => p[1]);
     let shadow = "", crown = "";
     for (let y = Math.min(...ys) + step / 2; y < Math.max(...ys); y += step) {
       for (let x = Math.min(...xs) + step / 2; x < Math.max(...xs); x += step) {
         const p = [x + (r() - 0.5) * step * 0.7, y + (r() - 0.5) * step * 0.7];
-        if (r() < 0.38) continue;
+        if (r() < 0.35) continue;
         if (!pointInPoly(p, poly) || distToPoly(p, poly) < 16) continue;
         if (avoid.some(a => pointInPoly(p, a) || distToPoly(p, a) < 14)) continue;
         const rad = 8 + r() * 7;
         const shade = ["#2f7a2a", "#3b8a2f", "#2a6e27", "#47943a"][Math.floor(r() * 4)];
-        shadow += `<circle cx="${(p[0] + 5).toFixed(1)}" cy="${(p[1] + 7).toFixed(1)}" r="${rad.toFixed(1)}"/>`;
-        crown += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${rad.toFixed(1)}" fill="${shade}"/><circle cx="${(p[0] - rad * 0.3).toFixed(1)}" cy="${(p[1] - rad * 0.3).toFixed(1)}" r="${(rad * 0.45).toFixed(1)}" fill="#6fbf4c" opacity=".55"/>`;
+        shadow += `<circle cx="${(p[0] + 4).toFixed(1)}" cy="${(p[1] + 6).toFixed(1)}" r="${rad.toFixed(1)}"/>`;
+        crown += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${rad.toFixed(1)}" fill="${shade}"/><circle cx="${(p[0] - rad * 0.28).toFixed(1)}" cy="${(p[1] - rad * 0.28).toFixed(1)}" r="${(rad * 0.42).toFixed(1)}" fill="#6fbf4c" opacity=".5"/>`;
       }
     }
-    return `<g fill="rgba(0,0,0,.22)">${shadow}</g><g>${crown}</g>`;
+    return `<g fill="rgba(0,0,0,.2)">${shadow}</g><g>${crown}</g>`;
   }
 
   // Upright and along-edge label helpers
@@ -186,11 +186,11 @@
 
   function build() {
     const defs = `<defs>
-      ${texture("tx-available", "#6dbb3e", [{ c: "#4f9a2b", n: 70, blade: 1, len: 5, w: 1.1, o: .8 }, { c: "#8fd45a", n: 40, blade: 1, len: 4, w: 1, o: .7 }, { c: "#3f8424", n: 20, r: 1.6, o: .5 }], 11)}
-      ${texture("tx-booked", "#cfa33a", [{ c: "#b38726", n: 55, r: 1.6, o: .7 }, { c: "#e6c35e", n: 45, r: 1.3, o: .7 }, { c: "#9d7520", n: 14, blade: 1, len: 4, w: 1, o: .6 }], 23)}
-      ${texture("tx-sold", "#9a7346", [{ c: "#7f5c34", n: 60, r: 1.7, o: .75 }, { c: "#b58c5b", n: 45, r: 1.4, o: .7 }, { c: "#6a4b29", n: 16, r: 2.4, o: .45 }], 37)}
-      ${texture("tx-na", "#9aa0a4", [{ c: "#868c90", n: 50, r: 1.5, o: .7 }, { c: "#b1b6b9", n: 40, r: 1.3, o: .7 }], 41)}
-      ${texture("pat-park", "#78bf4a", [{ c: "#5ea53a", n: 80, blade: 1, len: 5, w: 1.1, o: .8 }, { c: "#94d464", n: 50, blade: 1, len: 4, w: 1, o: .65 }], 53, 64)}
+      ${texture("tx-available", "#6dbb3e", [{ c: "#4f9a2b", n: 16, blade: 1, len: 4.5, w: 1, o: .75 }, { c: "#8fd45a", n: 12, blade: 1, len: 3.5, w: 0.9, o: .65 }, { c: "#3f8424", n: 6, r: 1.4, o: .45 }], 11)}
+      ${texture("tx-booked", "#cfa33a", [{ c: "#b38726", n: 14, r: 1.5, o: .65 }, { c: "#e6c35e", n: 10, r: 1.2, o: .65 }, { c: "#9d7520", n: 5, blade: 1, len: 3.5, w: 0.9, o: .55 }], 23)}
+      ${texture("tx-sold", "#9a7346", [{ c: "#7f5c34", n: 14, r: 1.5, o: .7 }, { c: "#b58c5b", n: 10, r: 1.3, o: .65 }, { c: "#6a4b29", n: 5, r: 2.0, o: .4 }], 37)}
+      ${texture("tx-na", "#9aa0a4", [{ c: "#868c90", n: 12, r: 1.4, o: .65 }, { c: "#b1b6b9", n: 8, r: 1.2, o: .65 }], 41)}
+      ${texture("pat-park", "#78bf4a", [{ c: "#5ea53a", n: 20, blade: 1, len: 4.5, w: 1, o: .75 }, { c: "#94d464", n: 12, blade: 1, len: 3.5, w: 0.9, o: .6 }], 53, 64)}
       <pattern id="pat-hatch" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)"><rect width="10" height="10" fill="transparent"/><path d="M0 0V10" stroke="#e58a2b" stroke-width="2.4" opacity=".55"/></pattern>
     </defs>`;
 
@@ -272,10 +272,15 @@
   /* ================= View: pan / zoom / rotate / tilt ================= */
   const stage = document.getElementById("stage");
   const panel = document.getElementById("panel");
+  const needleEl = document.getElementById("needle");
+  const zoomHint = document.getElementById("zoom-hint");
+  const zoomHintBtn = document.getElementById("zoom-hint-btn");
   const TILT_3D = 45;
   const DIMS_MIN_Z = 0.8;
   const view = { cx: HOME.cx, cy: HOME.cy, z: 0.3, tilt: TILT_3D, rot: 0, pl: 0 };
   let SW = 0, SH = 0, lastZ = 0;
+  let stageRect = { left: 0, top: 0, width: 0, height: 0 };
+
   const isWide = () => window.matchMedia("(min-width: 900px)").matches;
   const pads = () => isWide() ? { t: 8, r: 64, b: 86 } : { t: 64, r: 58, b: 96 };
 
@@ -283,6 +288,7 @@
     SW = stage.clientWidth; SH = stage.clientHeight;
     svg.setAttribute("viewBox", `0 0 ${SW} ${SH}`);
     svg.setAttribute("width", SW); svg.setAttribute("height", SH);
+    stageRect = stage.getBoundingClientRect();
   }
   const panelPad = () => (isWide() && panel.classList.contains("open") ? panel.offsetLeft + panel.offsetWidth : 0);
 
@@ -311,39 +317,88 @@
   const MAX_Z = 10;
   const clampZ = z => Math.max(minZ(), Math.min(z, MAX_Z));
 
-  function apply() {
+  /* rAF Render Scheduler */
+  let renderScheduled = false;
+  let forceFullRender = false;
+
+  function scheduleApply(forceFull = false) {
+    if (forceFull) forceFullRender = true;
+    if (!renderScheduled) {
+      renderScheduled = true;
+      requestAnimationFrame(renderLoop);
+    }
+  }
+
+  function renderLoop() {
+    renderScheduled = false;
+    const full = forceFullRender;
+    forceFullRender = false;
+    apply(full);
+  }
+
+  let lastRot = null;
+  let lastTilt = null;
+  let lastZApplied = null;
+
+  function apply(forceFull = false) {
     const m = matrixFor(view);
     const f = n => n.toFixed(4);
     content.setAttribute("transform", `matrix(${f(m.a)} ${f(m.b)} ${f(m.c)} ${f(m.d)} ${m.e.toFixed(2)} ${m.f.toFixed(2)})`);
+
+    const rotChanged = forceFull || lastRot === null || Math.abs(view.rot - lastRot) > 0.005;
+    const tiltChanged = forceFull || lastTilt === null || Math.abs(view.tilt - lastTilt) > 0.005;
+    const zChanged = forceFull || lastZApplied === null || Math.abs(view.z - lastZApplied) > 0.0005;
+
+    if (rotChanged || tiltChanged || zChanged) {
+      const st = Math.sin(view.tilt * Math.PI / 180);
+      const w1 = unproject(m, 0, 9 * view.z * st), w2 = unproject(m, 0, 20 * view.z * st);
+      walls.setAttribute("transform", `translate(${w1[0].toFixed(2)} ${w1[1].toFixed(2)})`);
+      wallsHi.setAttribute("transform", `translate(${w2[0].toFixed(2)} ${w2[1].toFixed(2)})`);
+
+      const sy = (1 / m.ct).toFixed(4), rr = (-view.rot).toFixed(2);
+      uprights.forEach(u => u.el.setAttribute("transform", `translate(${u.x} ${u.y}) rotate(${rr}) scale(1 ${sy}) translate(${-u.x} ${-u.y})`));
+      alongs.forEach(a => {
+        let ang = a.ang;
+        const eff = ((ang + view.rot) % 360 + 540) % 360 - 180;
+        if (eff > 90.5 || eff <= -89.5) ang += 180;
+        a.el.setAttribute("transform", `translate(${a.x} ${a.y}) rotate(${ang.toFixed(2)})`);
+      });
+
+      if (needleEl) {
+        needleEl.style.transform = `rotate(${(Math.atan2(-m.a, m.b) * 180 / Math.PI).toFixed(1)}deg)`;
+      }
+
+      lastRot = view.rot;
+      lastTilt = view.tilt;
+    }
+
+    if (zChanged) {
+      if (Math.abs(view.z - lastZ) / (lastZ || 1) > 0.01) {
+        numLabels.forEach(n => {
+          const fs = Math.min(n.fsMax, Math.max(n.p.fs, 12 / view.z));
+          const y = n.p.c[1] + fs * 0.35;
+          n.el.setAttribute("font-size", fs.toFixed(1));
+          n.el.setAttribute("y", y.toFixed(1));
+          n.area.setAttribute("y", (y + 11).toFixed(1));
+        });
+        lastZ = view.z;
+      }
+      const far = view.z < DIMS_MIN_Z;
+      svg.classList.toggle("far", far);
+      zoomHint.hidden = !far || document.body.classList.contains("hide-dims") || !!root.firstChild;
+      lastZApplied = view.z;
+    }
+
+    if (!stage.classList.contains("dragging") && (rotChanged || tiltChanged || zChanged)) {
+      updateLiftOffset(m);
+    }
+  }
+
+  function updateLiftOffset(m) {
     const st = Math.sin(view.tilt * Math.PI / 180);
-    const w1 = unproject(m, 0, 9 * view.z * st), w2 = unproject(m, 0, 20 * view.z * st);
-    walls.setAttribute("transform", `translate(${w1[0].toFixed(2)} ${w1[1].toFixed(2)})`);
-    wallsHi.setAttribute("transform", `translate(${w2[0].toFixed(2)} ${w2[1].toFixed(2)})`);
     const lift = unproject(m, 0, -view.z * (2 + 5 * st));
     svg.style.setProperty("--lift-x", `${lift[0].toFixed(2)}px`);
     svg.style.setProperty("--lift-y", `${lift[1].toFixed(2)}px`);
-    const sy = (1 / m.ct).toFixed(4), rr = (-view.rot).toFixed(2);
-    uprights.forEach(u => u.el.setAttribute("transform", `translate(${u.x} ${u.y}) rotate(${rr}) scale(1 ${sy}) translate(${-u.x} ${-u.y})`));
-    alongs.forEach(a => {
-      let ang = a.ang;
-      const eff = ((ang + view.rot) % 360 + 540) % 360 - 180;
-      if (eff > 90.5 || eff <= -89.5) ang += 180;
-      a.el.setAttribute("transform", `translate(${a.x} ${a.y}) rotate(${ang.toFixed(2)})`);
-    });
-    if (Math.abs(view.z - lastZ) / (lastZ || 1) > 0.01) {
-      numLabels.forEach(n => {
-        const fs = Math.min(n.fsMax, Math.max(n.p.fs, 12 / view.z));
-        const y = n.p.c[1] + fs * 0.35;
-        n.el.setAttribute("font-size", fs.toFixed(1));
-        n.el.setAttribute("y", y.toFixed(1));
-        n.area.setAttribute("y", (y + 11).toFixed(1));
-      });
-      lastZ = view.z;
-    }
-    const far = view.z < DIMS_MIN_Z;
-    svg.classList.toggle("far", far);
-    zoomHint.hidden = !far || document.body.classList.contains("hide-dims") || !!root.firstChild;
-    document.getElementById("needle").style.transform = `rotate(${(Math.atan2(-m.a, m.b) * 180 / Math.PI).toFixed(1)}deg)`;
   }
 
   function toPlan(sx, sy) {
@@ -355,7 +410,7 @@
     view.z = clampZ(view.z * factor);
     const after = toPlan(sx, sy);
     view.cx += before[0] - after[0]; view.cy += before[1] - after[1];
-    clampCenter(); apply();
+    clampCenter(); scheduleApply(true);
   }
   function clampCenter() {
     view.cx = Math.max(BOUNDS.x0 - 400, Math.min(BOUNDS.x1 + 400, view.cx));
@@ -363,19 +418,21 @@
   }
 
   let anim = null;
+  let inertiaAnim = null;
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   function animateTo(target, ms = 650) {
     cancelAnimationFrame(anim);
+    cancelAnimationFrame(inertiaAnim);
     const from = { ...view };
     const to = { ...view, ...target };
-    if (reduceMotion) { Object.assign(view, to); apply(); syncModeBtn(); return; }
+    if (reduceMotion) { Object.assign(view, to); scheduleApply(true); syncModeBtn(); return; }
     const t0 = performance.now();
     const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     const step = now => {
       const k = Math.min(1, (now - t0) / ms), e = ease(k);
       for (const key of ["cx", "cy", "z", "tilt", "rot", "pl"]) view[key] = from[key] + (to[key] - from[key]) * e;
-      apply();
-      if (k < 1) anim = requestAnimationFrame(step); else syncModeBtn();
+      scheduleApply(true);
+      if (k < 1) anim = requestAnimationFrame(step); else { syncModeBtn(); updateLiftOffset(matrixFor(view)); }
     };
     anim = requestAnimationFrame(step);
   }
@@ -389,75 +446,158 @@
   /* Pointer Interaction */
   const pointers = new Map();
   let drag = null, pinch = null, downPlot = null, moved = 0;
+  let velX = 0, velY = 0, lastMoveTime = 0;
   const onMap = e => e.target.closest("#map") || e.target === stage;
+
   stage.addEventListener("contextmenu", e => { if (e.target.closest("#map")) e.preventDefault(); });
   stage.addEventListener("pointerdown", e => {
     if (!onMap(e)) return;
     cancelAnimationFrame(anim);
+    cancelAnimationFrame(inertiaAnim);
+    if (wheelAnim) { cancelAnimationFrame(wheelAnim); wheelAnim = null; wheelTargetZ = null; }
+    stageRect = stage.getBoundingClientRect();
     pointers.set(e.pointerId, [e.clientX, e.clientY]);
     stage.setPointerCapture(e.pointerId);
-    const rect = stage.getBoundingClientRect();
     moved = 0;
+    velX = 0; velY = 0;
+    lastMoveTime = performance.now();
     downPlot = e.target.closest(".plot");
     if (pointers.size === 1) {
-      drag = { rotateMode: e.button === 2 || e.shiftKey, sx: e.clientX, sy: e.clientY, lx: e.clientX, ly: e.clientY, p0: toPlan(e.clientX - rect.left, e.clientY - rect.top) };
+      drag = {
+        rotateMode: e.button === 2 || e.shiftKey,
+        sx: e.clientX, sy: e.clientY,
+        lx: e.clientX, ly: e.clientY,
+        p0: toPlan(e.clientX - stageRect.left, e.clientY - stageRect.top)
+      };
     } else if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
-      pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: view.z, mid: [(a[0] + b[0]) / 2 - rect.left, (a[1] + b[1]) / 2 - rect.top] };
+      pinch = {
+        d: Math.hypot(a[0] - b[0], a[1] - b[1]),
+        z: view.z,
+        mid: [(a[0] + b[0]) / 2 - stageRect.left, (a[1] + b[1]) / 2 - stageRect.top]
+      };
       pinch.p0 = toPlan(pinch.mid[0], pinch.mid[1]);
       drag = null;
     }
   });
+
   stage.addEventListener("pointermove", e => {
     if (!pointers.has(e.pointerId)) return;
     pointers.set(e.pointerId, [e.clientX, e.clientY]);
-    const rect = stage.getBoundingClientRect();
+
     if (pinch && pointers.size >= 2) {
       const [a, b] = [...pointers.values()];
       const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
-      const mid = [(a[0] + b[0]) / 2 - rect.left, (a[1] + b[1]) / 2 - rect.top];
+      const mid = [(a[0] + b[0]) / 2 - stageRect.left, (a[1] + b[1]) / 2 - stageRect.top];
       view.z = clampZ(pinch.z * d / pinch.d);
       const p = toPlan(mid[0], mid[1]);
       view.cx += pinch.p0[0] - p[0]; view.cy += pinch.p0[1] - p[1];
-      moved = 99; clampCenter(); apply();
+      moved = 99; clampCenter(); scheduleApply(true);
       return;
     }
+
     if (!drag) return;
     moved = Math.max(moved, Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy));
     if (moved < 5) return;
     stage.classList.add("dragging");
     hideTip();
+
+    const now = performance.now();
+    const dt = Math.max(1, now - lastMoveTime);
+    velX = (e.clientX - drag.lx) / dt;
+    velY = (e.clientY - drag.ly) / dt;
+    lastMoveTime = now;
+
     if (drag.rotateMode) {
       view.rot += (e.clientX - drag.lx) * 0.35;
       view.tilt = Math.max(0, Math.min(62, view.tilt - (e.clientY - drag.ly) * 0.25));
       syncModeBtn();
+      scheduleApply(true);
     } else {
-      const p = toPlan(e.clientX - rect.left, e.clientY - rect.top);
+      const p = toPlan(e.clientX - stageRect.left, e.clientY - stageRect.top);
       view.cx += drag.p0[0] - p[0]; view.cy += drag.p0[1] - p[1];
       clampCenter();
+      scheduleApply(false);
     }
     drag.lx = e.clientX; drag.ly = e.clientY;
-    apply();
   });
+
   function endPointer(e) {
     if (!pointers.has(e.pointerId)) return;
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch = null;
     if (pointers.size === 0) {
       stage.classList.remove("dragging");
-      if (drag && moved < 5 && downPlot && e.type === "pointerup" && e.button !== 2) openPlot(+downPlot.dataset.no);
+      updateLiftOffset(matrixFor(view));
+
+      if (drag && moved < 5 && downPlot && e.type === "pointerup" && e.button !== 2) {
+        openPlot(+downPlot.dataset.no);
+      } else if (drag && !drag.rotateMode && moved >= 5 && !reduceMotion) {
+        const speed = Math.hypot(velX, velY);
+        if (speed > 0.08) {
+          let vx = velX * 18, vy = velY * 18;
+          const decay = () => {
+            if (Math.hypot(vx, vy) < 0.12 || drag) {
+              inertiaAnim = null;
+              return;
+            }
+            const m = matrixFor(view);
+            const d = unproject(m, -vx, -vy);
+            view.cx += d[0]; view.cy += d[1];
+            clampCenter();
+            scheduleApply(false);
+            vx *= 0.89; vy *= 0.89;
+            inertiaAnim = requestAnimationFrame(decay);
+          };
+          cancelAnimationFrame(inertiaAnim);
+          inertiaAnim = requestAnimationFrame(decay);
+        }
+      }
       drag = null; downPlot = null;
     }
   }
+
   stage.addEventListener("pointerup", endPointer);
   stage.addEventListener("pointercancel", endPointer);
+
+  /* Fluid mouse wheel zoom */
+  let wheelTargetZ = null;
+  let wheelPivot = null;
+  let wheelAnim = null;
+
   stage.addEventListener("wheel", e => {
     if (!onMap(e)) return;
     e.preventDefault();
     cancelAnimationFrame(anim);
-    const rect = stage.getBoundingClientRect();
+    cancelAnimationFrame(inertiaAnim);
+
     const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
-    zoomAt(e.clientX - rect.left, e.clientY - rect.top, Math.exp(-dy * (e.ctrlKey ? 0.01 : 0.0018)));
+    const factor = Math.exp(-dy * (e.ctrlKey ? 0.008 : 0.0016));
+    const sx = e.clientX - stageRect.left, sy = e.clientY - stageRect.top;
+
+    if (wheelTargetZ === null) {
+      wheelTargetZ = view.z;
+    }
+    wheelTargetZ = clampZ(wheelTargetZ * factor);
+    wheelPivot = [sx, sy];
+
+    if (!wheelAnim) {
+      const step = () => {
+        if (wheelTargetZ === null) { wheelAnim = null; return; }
+        const diff = wheelTargetZ - view.z;
+        if (Math.abs(diff) < 0.0004) {
+          zoomAt(wheelPivot[0], wheelPivot[1], wheelTargetZ / view.z);
+          wheelTargetZ = null;
+          wheelAnim = null;
+          scheduleApply(true);
+          return;
+        }
+        const nextZ = view.z + diff * 0.32;
+        zoomAt(wheelPivot[0], wheelPivot[1], nextZ / view.z);
+        wheelAnim = requestAnimationFrame(step);
+      };
+      wheelAnim = requestAnimationFrame(step);
+    }
   }, { passive: false });
 
   /* Keyboard controls */
@@ -498,8 +638,9 @@
     const delta = ((target - view.rot) % 360 + 540) % 360 - 180;
     animateTo({ rot: view.rot + delta, z: fitZoom(view.tilt, target) }, 600);
   });
-  const zoomHint = document.getElementById("zoom-hint");
-  document.getElementById("zoom-hint-btn").addEventListener("click", () => animateTo({ z: Math.max(DIMS_MIN_Z * 1.35, view.z) }, 500));
+  if (zoomHintBtn) {
+    zoomHintBtn.addEventListener("click", () => animateTo({ z: Math.max(DIMS_MIN_Z * 1.35, view.z) }, 500));
+  }
 
   /* ================= Tooltip & Toast ================= */
   const tip = document.getElementById("tooltip");
@@ -513,7 +654,7 @@
   }
   const canHover = matchMedia("(hover: hover)").matches;
   stage.addEventListener("pointermove", e => {
-    if (!canHover || (drag && moved >= 5) || pinch) return;
+    if (!canHover || drag || pinch) return;
     const pl = e.target.closest(".plot");
     if (pl) {
       const p = byNo[pl.dataset.no];
@@ -961,16 +1102,16 @@
   layout();
   setPanel(isWide(), false);
   view.z = fitZoom();
-  apply();
+  apply(true);
   syncModeBtn();
   let resizeTimer = null;
   window.addEventListener("resize", () => {
     layout();
     stage.classList.toggle("panel-docked", panel.classList.contains("open") && isWide());
     view.pl = panelPad();
-    apply();
+    apply(true);
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { if (view.z < minZ()) { view.z = minZ(); apply(); } }, 150);
+    resizeTimer = setTimeout(() => { if (view.z < minZ()) { view.z = minZ(); apply(true); } }, 150);
   });
 
   // Deep links: #plot-24 opens that plot

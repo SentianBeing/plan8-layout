@@ -262,10 +262,25 @@ summary:focus-visible,
   cursor: grabbing;
 }
 
+.stage.dragging #plots,
+.stage.dragging .zone-hit {
+  pointer-events: none;
+}
+
+.stage.dragging .plot .top,
+.stage.dragging .plot .face {
+  transition: none !important;
+}
+
 #map {
   position: absolute;
   inset: 0;
   display: block;
+  contain: strict;
+}
+
+#content {
+  will-change: transform;
 }
 
 /* Map vector styling */
