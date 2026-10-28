@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Plan-8 Plot Layout · Interactive 3D Residential Site Plan</title>
+
+  <!-- SEO & Social Meta Tags -->
+  <meta name="description" content="Interactive 3D plot layout for Plan-8: 61 residential sites with real-time availability, dimensions, facing, pricing, and instant enquiry.">
+  <meta name="keywords" content="Plan-8, plot layout, residential plots, 3D site plan, real estate, interactive plot map, plot availability">
+  <meta name="author" content="Plan-8 Layouts">
+  <meta name="theme-color" content="#0f3820">
+
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Plan-8 Plot Layout · Interactive 3D Site Plan">
+  <meta property="og:description" content="Explore all 61 residential plots with live availability, dimensions, facing, and interactive sketches.">
+  <meta property="og:image" content="/og-banner.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Plan-8 Plot Layout · Interactive 3D Site Plan">
+  <meta name="twitter:description" content="Explore all 61 residential plots with live availability, dimensions, and facing.">
+  <meta name="twitter:image" content="/og-banner.jpg">
+
+  <!-- Favicon & PWA Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+
+  <!-- Web Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 30 30" aria-hidden="true">
+        <rect x="1" y="1" width="28" height="28" rx="8" fill="#e9c25a"/>
+        <path d="M8 21 L8 12 L15 8 L22 12 L22 21 Z" fill="none" stroke="#0f3820" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M8 16 H22 M15 12 V21" stroke="#0f3820" stroke-width="1.6"/>
+      </svg>
+      <div class="brand-text">
+        <h1 id="proj-title">Plan-8 Layout</h1>
+        <p id="proj-sub">Residential plotted layout · 61 sites</p>
+      </div>
+      <span class="tag">3D Layout</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-meta">
+        <span>Plots <b>61</b></span>
+        <span>Development area <b>16,895.39 m²</b></span>
+        <span>Scale <b>1:600</b></span>
+      </div>
+      <button class="btn-head" id="btn-enquire" type="button" aria-label="Send general enquiry">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>Enquire</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main 3D / 2D Interactive Stage -->
+  <main class="stage" id="stage" aria-label="Interactive plot layout">
+    <svg id="map" xmlns="http://www.w3.org/2000/svg" aria-label="Site plan with 61 plots"></svg>
+
+    <!-- Side Plot Panel / Mobile Bottom Sheet -->
+    <aside class="panel glass" id="panel" aria-label="Plot list and filters">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="panel-head">
+        <div class="ph-top">
+          <div>
+            <div class="eyebrow">Plots</div>
+            <div class="ph-count"><b id="avail-count">0</b>available <span>of 61</span></div>
+          </div>
+          <button class="icon-btn" id="panel-close" type="button" aria-label="Hide plot list">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <path d="M6 6l12 12M18 6 6 18"/>
+            </svg>
+          </button>
+        </div>
+        <label class="search" for="q">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="m20 20-3.5-3.5"/>
+          </svg>
+          <span class="sr-only">Find a plot</span>
+          <input id="q" type="search" inputmode="numeric" placeholder="Find plot number, e.g. 24" autocomplete="off">
+        </label>
+        <div class="chips" id="f-status" role="group" aria-label="Filter by status"></div>
+      </div>
+      <div class="panel-scroll">
+        <details class="more" id="more-filters">
+          <summary>Facing, size &amp; display</summary>
+          <div class="more-body">
+            <div class="fgroup">
+              <div class="flabel">Facing</div>
+              <div class="chips" id="f-facing" role="group" aria-label="Filter by facing"></div>
+            </div>
+            <div class="fgroup">
+              <div class="flabel">Plot size</div>
+              <div class="chips" id="f-size" role="group" aria-label="Filter by plot size"></div>
+            </div>
+            <div class="row-wrap">
+              <div class="fgroup">
+                <div class="flabel">Measurements</div>
+                <div class="seg" id="f-units">
+                  <button type="button" data-u="m" aria-pressed="true">Metres</button>
+                  <button type="button" data-u="ft" aria-pressed="false">Feet</button>
+                  <button type="button" data-u="off" aria-pressed="false">Hide</button>
+                </div>
+              </div>
+              <div class="fgroup">
+                <div class="flabel">Survey nos.</div>
+                <div class="seg" id="f-survey">
+                  <button type="button" data-s="on" aria-pressed="true">Show</button>
+                  <button type="button" data-s="off" aria-pressed="false">Hide</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <div class="results-head">
+          <span id="results-head"></span>
+          <button class="linkish" id="clear-filters" type="button" hidden>Clear filters</button>
+        </div>
+        <div class="plist" id="results"></div>
+
+        <details class="more">
+          <summary>About this layout</summary>
+          <div class="more-body">
+            <div class="fgroup">
+              <div class="flabel">Land use (approved plan)</div>
+              <div class="summary">
+                <span>Residential · 61 plots</span><b>8,818.90 m² · 52.19%</b>
+                <span>Park &amp; open space</span><b>2,539.72 m² · 15.03%</b>
+                <span>Public utility</span><b>101.73 m² · 0.60%</b>
+                <span>Roads incl. widening</span><b>5,435.04 m² · 32.18%</b>
+                <span>Total</span><b>16,895.39 m²</b>
+              </div>
+            </div>
+            <div class="fgroup">
+              <div class="flabel">Plot sizes</div>
+              <div class="summary">
+                <span>9.14 m × 15.24 m (30′ × 50′)</span><b>38</b>
+                <span>9.14 m × 12.19 m (30′ × 40′)</span><b>7</b>
+                <span>Odd sites</span><b>16</b>
+              </div>
+            </div>
+            <div class="fgroup">
+              <div class="flabel">Area statement (revenue records)</div>
+              <div class="summary">
+                <span>Gross area</span><b>4A-16G · 17,805.92 m²</b>
+                <span>Total kharab</span><b>0A-06G · 607.02 m²</b>
+                <span>Net area</span><b>4A-10G · 17,198.90 m²</b>
+                <span>For development</span><b>4A-07G · 16,895.39 m²</b>
+                <span>Survey nos.</span><b>32/2, 32/3, 32/4, 32/5, 33/1</b>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </aside>
+
+    <!-- Floating Trigger to Open Panel -->
+    <button class="hud fab glass" id="panel-open" type="button" aria-controls="panel" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 6h16M4 12h16M4 18h10"/>
+      </svg>
+      Plots <b id="fab-count">0</b>
+    </button>
+
+    <!-- Zoom Hint -->
+    <div class="hud zoom-hint glass" id="zoom-hint" hidden>
+      Zoom in to see plot measurements
+      <button type="button" id="zoom-hint-btn">Show</button>
+    </div>
+
+    <!-- Top-Right Controls -->
+    <div class="hud hud-tr">
+      <div class="ctrls glass" role="toolbar" aria-label="View controls">
+        <button type="button" id="btn-mode" title="Switch between 3D and 2D view (T)" aria-label="Switch to 2D view">
+          <span class="mode">2D</span>
+        </button>
+        <button type="button" id="btn-zin" title="Zoom in (+)" aria-label="Zoom in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+        <button type="button" id="btn-zout" title="Zoom out (−)" aria-label="Zoom out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M5 12h14"/>
+          </svg>
+        </button>
+        <button type="button" id="btn-rl" title="Rotate left (Q)" aria-label="Rotate left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>
+          </svg>
+        </button>
+        <button type="button" id="btn-rr" title="Rotate right (E)" aria-label="Rotate right">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>
+          </svg>
+        </button>
+        <button type="button" id="btn-reset" title="Show whole layout (0)" aria-label="Show whole layout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Compass & Legend HUD -->
+    <div class="hud hud-b glass">
+      <button class="compass" id="compass" type="button" title="Turn north up" aria-label="Compass. Turn north up">
+        <svg viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.18)" stroke-dasharray="2 3"/>
+          <g class="needle" id="needle">
+            <path d="M26 9 L31 26 L26 23 L21 26 Z" fill="#e9c25a"/>
+            <path d="M26 43 L31 26 L26 29 L21 26 Z" fill="rgba(255,255,255,.35)"/>
+            <text x="26" y="7.5" text-anchor="middle" font-size="7.5" font-weight="800" fill="#fff" font-family="Outfit, sans-serif">N</text>
+          </g>
+        </svg>
+      </button>
+      <div class="legend">
+        <div class="legend-row" id="legend">
+          <span class="lt">Status</span>
+        </div>
+        <div class="legend-row keys">
+          <span class="lt">Map</span>
+          <span class="item key"><i class="sw sw-park"></i>Park</span>
+          <span class="item key"><i class="sw sw-road"></i>Road</span>
+          <span class="item key"><i class="sw sw-widen"></i>Road widening</span>
+          <span class="item key"><i class="sw sw-util"></i>Utility / STP</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tip Hint -->
+    <div class="hint">
+      Drag to move · Scroll or <kbd>+</kbd> <kbd>−</kbd> to zoom<br>
+      Right-drag or Shift-drag to rotate &amp; tilt
+    </div>
+  </main>
+
+  <!-- Tooltip & Modal Root -->
+  <div class="tooltip" id="tooltip" hidden></div>
+  <div id="modal-root"></div>
+
+  <!-- Application Script -->
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

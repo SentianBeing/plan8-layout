@@ -1,0 +1,16 @@
+{
+  "name": "Plan-8 Layout - Interactive 3D Plot Layout",
+  "short_name": "Plan-8",
+  "description": "Interactive 3D plot layout for Plan-8: 61 residential sites with live availability, sizes, facing and side dimensions.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1211",
+  "theme_color": "#0f3820",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

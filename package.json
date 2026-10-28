@@ -1,0 +1,14 @@
+{
+  "name": "plan8-plot-layout",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive 3D Plot Layout for Plan-8 residential development - Vercel deployable",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.11"
+  }
+}
